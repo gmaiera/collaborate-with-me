@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex ludicrous-mode Media Intake MVP</title>
+  <meta name="description" content="A case study showing how Codex ludicrous-mode shipped a media intake workflow from YouTube link to transcript, metadata, and content pack.">
+  <meta property="og:title" content="Codex ludicrous-mode Media Intake MVP">
+  <meta property="og:description" content="A real workflow case study: YouTube link to transcript, metadata, and content pack.">
+  <meta property="og:image" content="https://i.ytimg.com/vi/ebhlVJtaDKw/maxresdefault.jpg">
+  <meta name="theme-color" content="#0f4c45">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18211d;
+      --muted: #5d6b63;
+      --paper: #f7faf8;
+      --panel: #ffffff;
+      --panel-soft: #eef6f3;
+      --line: #d6e1dc;
+      --accent: #007a5a;
+      --accent-2: #b9462f;
+      --accent-3: #2f5aa8;
+      --dark: #101815;
+      --code: #13241f;
+      --shadow: 0 18px 60px rgba(23, 43, 35, .12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    a { color: inherit; }
+
+    .page {
+      overflow: hidden;
+    }
+
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      align-items: end;
+      position: relative;
+      background:
+        linear-gradient(90deg, rgba(8, 19, 15, .92), rgba(8, 19, 15, .64) 46%, rgba(8, 19, 15, .18)),
+        url("https://i.ytimg.com/vi/ebhlVJtaDKw/maxresdefault.jpg") center / cover no-repeat;
+      color: #fff;
+    }
+
+    .hero-inner {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 96px 0 72px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, .08);
+      backdrop-filter: blur(8px);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      max-width: 880px;
+      margin: 24px 0 18px;
+      font-size: clamp(3rem, 8vw, 7.25rem);
+      line-height: .92;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(1.08rem, 2.3vw, 1.55rem);
+      line-height: 1.48;
+      color: rgba(255, 255, 255, .88);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .button {
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--dark);
+      font-weight: 760;
+      text-decoration: none;
+    }
+
+    .button.secondary {
+      background: rgba(255, 255, 255, .1);
+      color: #fff;
+      backdrop-filter: blur(8px);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      background: var(--panel);
+      padding: 24px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    section {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 82px 0;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(260px, .7fr);
+      gap: 44px;
+      align-items: end;
+      margin-bottom: 36px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(2.1rem, 5vw, 4.4rem);
+      line-height: .98;
+      letter-spacing: 0;
+    }
+
+    .section-head p,
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.65;
+    }
+
+    .band {
+      width: 100%;
+      max-width: none;
+      background: var(--dark);
+      color: #fff;
+    }
+
+    .band > .band-inner {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 82px 0;
+    }
+
+    .band .lead,
+    .band .section-head p {
+      color: rgba(255, 255, 255, .72);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 34px;
+    }
+
+    .step {
+      min-height: 220px;
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .06);
+    }
+
+    .step .num {
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #dff5ee;
+      color: #08352a;
+      font-weight: 850;
+    }
+
+    .step h3,
+    .tile h3,
+    .proof h3 {
+      margin: 18px 0 8px;
+      font-size: 1.18rem;
+      letter-spacing: 0;
+    }
+
+    .step p,
+    .tile p,
+    .proof p,
+    .proof li {
+      margin: 0;
+      color: rgba(255, 255, 255, .72);
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .tile {
+      min-height: 220px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 10px 36px rgba(23, 43, 35, .06);
+    }
+
+    .tile p {
+      color: var(--muted);
+    }
+
+    .token {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 9px;
+      border-radius: 6px;
+      background: var(--panel-soft);
+      color: var(--accent);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .proof {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .proof p,
+    .proof li {
+      color: var(--muted);
+    }
+
+    .proof ul {
+      margin: 14px 0 0;
+      padding-left: 19px;
+    }
+
+    .terminal {
+      overflow: auto;
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 8px;
+      background: var(--code);
+      color: #dff5ee;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .92rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .timeline {
+      border-left: 2px solid var(--line);
+      margin-top: 34px;
+      padding-left: 24px;
+    }
+
+    .event {
+      position: relative;
+      margin: 0 0 28px;
+    }
+
+    .event::before {
+      content: "";
+      position: absolute;
+      left: -32px;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 5px var(--paper);
+    }
+
+    .event h3 {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+      letter-spacing: 0;
+    }
+
+    .event p {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      line-height: 1.58;
+    }
+
+    .cta {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto 72px;
+      padding: 42px;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .cta h2 {
+      font-size: clamp(1.9rem, 4vw, 3.6rem);
+    }
+
+    .cta p {
+      max-width: 760px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .cta .button {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    footer {
+      padding: 28px 20px 42px;
+      color: var(--muted);
+      text-align: center;
+      font-size: .92rem;
+    }
+
+    @media (max-width: 880px) {
+      .hero {
+        min-height: 88vh;
+        background:
+          linear-gradient(180deg, rgba(8, 19, 15, .52), rgba(8, 19, 15, .94)),
+          url("https://i.ytimg.com/vi/ebhlVJtaDKw/maxresdefault.jpg") center / cover no-repeat;
+      }
+      .hero-inner {
+        padding: 72px 0 48px;
+      }
+      .stats,
+      .flow,
+      .grid,
+      .compare,
+      .section-head,
+      .cta {
+        grid-template-columns: 1fr;
+      }
+      .stat {
+        padding: 20px;
+      }
+      .cta {
+        padding: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-inner">
+        <span class="eyebrow">Codex case study</span>
+        <h1>How ludicrous-mode shipped a working media intake flow</h1>
+        <p>A real example of turning one YouTube talk into transcript, metadata, and reusable content artifacts while keeping scope, cost, risk, and verification visible.</p>
+        <div class="hero-actions">
+          <a class="button" href="#pattern">See the pattern</a>
+          <a class="button secondary" href="https://youtu.be/ebhlVJtaDKw?si=yXaxzP98AvDvyDlL">Source talk</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="stats" aria-label="Implementation results">
+      <div class="stat"><strong>0</strong><span>paid API dollars used for the MVP</span></div>
+      <div class="stat"><strong>3,006</strong><span>words captured from the TEDx transcript</span></div>
+      <div class="stat"><strong>17:53</strong><span>talk duration processed from YouTube metadata</span></div>
+      <div class="stat"><strong>3</strong><span>artifact files generated per media item</span></div>
+    </div>
+
+    <section id="pattern">
+      <div class="section-head">
+        <h2>The useful part was the shape of the work.</h2>
+        <p>`ludicrous-mode` worked because the target was bounded: one input, one repository, one script, one output folder, and a clear definition of done.</p>
+      </div>
+      <div class="grid">
+        <div class="tile">
+          <span class="token">Win</span>
+          <h3>Make media operational</h3>
+          <p>A YouTube link should become usable knowledge: transcript, metadata, and a content pack ready for feedback or reuse.</p>
+        </div>
+        <div class="tile">
+          <span class="token">Boundary</span>
+          <h3>Keep the work contained</h3>
+          <p>The implementation stayed inside the IWO workspace, avoided unrelated files, and did not use paid transcription services.</p>
+        </div>
+        <div class="tile">
+          <span class="token">Proof</span>
+          <h3>Verify with a real artifact</h3>
+          <p>The test case was Gustavo Maiera’s TEDxFundinho talk, not a placeholder or synthetic example.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="band">
+      <div class="band-inner">
+        <div class="section-head">
+          <h2>The automation path is simple.</h2>
+          <p>The system tries the cheapest, fastest route first. If captions exist, use them. If not, preserve the artifact and make the next fallback explicit.</p>
+        </div>
+        <div class="flow">
+          <div class="step">
+            <span class="num">1</span>
+            <h3>Receive a URL</h3>
+            <p>The script accepts a YouTube link or video ID and normalizes it into a canonical source.</p>
+          </div>
+          <div class="step">
+            <span class="num">2</span>
+            <h3>Fetch metadata</h3>
+            <p>`yt-dlp` and YouTube oEmbed capture title, channel, duration, thumbnail, description, and source URL.</p>
+          </div>
+          <div class="step">
+            <span class="num">3</span>
+            <h3>Capture transcript</h3>
+            <p>`youtube-transcript-api` pulls captions first, with `yt-dlp` subtitles ready as a fallback path.</p>
+          </div>
+          <div class="step">
+            <span class="num">4</span>
+            <h3>Write artifacts</h3>
+            <p>The output becomes `transcript.md`, `metadata.json`, and `content-pack.md` in the knowledgebase.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-head">
+        <h2>The plan made autonomy legible.</h2>
+        <p>Before implementation, the plan started with the decision information that a human actually needs: the biggest achievement, the cost estimate, and the time estimate.</p>
+      </div>
+      <div class="terminal">Biggest achievement:
+Turn any useful YouTube link into an IWO-ready artifact automatically.
+
+Cost estimate:
+Expected financial cost: 0 for the MVP.
+
+Time estimate:
+Estimated implementation time: 60-120 minutes.
+
+Definition of done:
+Generate transcript, metadata, content pack, build log, and a case study.</div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>The failure was part of the product.</h2>
+        <p>The implementation did not go in a straight line. The value came from preserving what failed, why it failed, and how the system recovered.</p>
+      </div>
+      <div class="timeline">
+        <div class="event">
+          <h3>Dependency install failed</h3>
+          <p>The first install attempt could not resolve PyPI from the sandbox. The workflow kept moving by producing scaffold artifacts while waiting for the dependency path to open.</p>
+        </div>
+        <div class="event">
+          <h3>The version constraint was wrong</h3>
+          <p>`yt-dlp&gt;=2026.1.1` required Python 3.10+, while the local IWO virtual environment used Python 3.9.6.</p>
+        </div>
+        <div class="event">
+          <h3>The fix was precise</h3>
+          <p>The requirement was pinned to `yt-dlp&gt;=2025.10.14,&lt;2025.10.22`, the newest compatible range discovered during troubleshooting.</p>
+        </div>
+        <div class="event">
+          <h3>The final run captured the transcript</h3>
+          <p>The completed run captured YouTube captions, richer metadata, a 3,006-word transcript, and a content pack marked `captured`.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>What changed after the run?</h2>
+        <p>The system moved from a note saying “transcript pending” to a reusable intake workflow that can process future talks and videos.</p>
+      </div>
+      <div class="compare">
+        <div class="proof">
+          <span class="token">Before</span>
+          <h3>A manual content bottleneck</h3>
+          <ul>
+            <li>A YouTube link had to be watched or transcribed manually.</li>
+            <li>Feedback and social reuse waited for transcript access.</li>
+            <li>The implementation story lived only in conversation.</li>
+          </ul>
+        </div>
+        <div class="proof">
+          <span class="token">After</span>
+          <h3>A repeatable intake machine</h3>
+          <ul>
+            <li>One command creates transcript, metadata, and content-pack files.</li>
+            <li>The build log preserves decisions, blockers, and fixes.</li>
+            <li>The case study teaches the operating pattern to someone else.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Copy the operating pattern.</h2>
+        <p>The point is not this exact script. The point is how to safely give Codex a bounded target and let it work through implementation, troubleshooting, and verification.</p>
+      </div>
+      <div class="grid">
+        <div class="tile">
+          <span class="token">1</span>
+          <h3>Use the exact activation phrase</h3>
+          <p>Start with `ludicrous-mode`, then name a concrete outcome that can be verified.</p>
+        </div>
+        <div class="tile">
+          <span class="token">2</span>
+          <h3>Make the plan executive-readable</h3>
+          <p>Put biggest achievement, cost estimate, and time estimate at the top before the implementation details.</p>
+        </div>
+        <div class="tile">
+          <span class="token">3</span>
+          <h3>Preserve the story</h3>
+          <p>Keep a build log, record failures, and produce an artifact that explains how the work happened.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta" id="cta">
+      <div>
+        <h2>Want to try the pattern?</h2>
+        <p>Pick one bounded workflow with a real input and a visible output. Then ask Codex to run it with `ludicrous-mode`, keep a build log, and produce a shareable case study.</p>
+      </div>
+      <a class="button" href="mailto:gmaiera@gmail.com?subject=Codex%20ludicrous-mode%20workflow%20idea">Send a workflow idea</a>
+    </div>
+
+    <footer>
+      Built from a real IWO implementation session on April 28, 2026.
+    </footer>
+  </div>
+</body>
+</html>
