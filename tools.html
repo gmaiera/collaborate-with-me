@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Collaborate With Me</title>
-  <meta name="description" content="A small collection of collaboration pages from Gustavo Maiera.">
+  <title>Tools List | Collaborate With Me</title>
+  <meta name="description" content="A short list of useful tools Gustavo shares with friends and collaborators.">
   <style>
     :root {
       color-scheme: light;
@@ -26,6 +26,14 @@
       margin: 0 auto;
       padding: 72px 0;
     }
+    .back {
+      display: inline-flex;
+      margin-bottom: 36px;
+      color: var(--accent);
+      font-size: .9rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
     h1 {
       max-width: 720px;
       margin: 0 0 14px;
@@ -39,14 +47,15 @@
       font-size: 1.1rem;
       line-height: 1.6;
     }
-    .cards {
+    .tools {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 18px;
       margin-top: 44px;
     }
-    a.card {
+    .tool {
       display: block;
+      min-height: 190px;
       padding: 26px;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -67,17 +76,25 @@
       font-size: clamp(1.6rem, 4vw, 2.4rem);
       letter-spacing: 0;
     }
+    .url {
+      display: inline-flex;
+      margin-top: 18px;
+      color: var(--accent);
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
   <main>
-    <h1>Collaborate With Me</h1>
-    <p>Practical pages for ideas, experiments, and workflows that are ready to be shared, discussed, or improved with others.</p>
-    <div class="cards">
-      <a class="card" href="tools.html">
-        <div class="label">Friends</div>
-        <h2>Tools List</h2>
-        <p>A short list of useful tools worth sharing with friends, collaborators, and fast learners.</p>
+    <a class="back" href="index.html">Back to Collaborate With Me</a>
+    <h1>Tools List</h1>
+    <p>A compact list of tools worth trying and sharing with friends. Kept intentionally short so every link earns its place.</p>
+    <div class="tools">
+      <a class="tool" href="https://cap.so/" target="_blank" rel="noopener noreferrer">
+        <div class="label">Screen recording</div>
+        <h2>Cap</h2>
+        <p>Open-source screen recording for fast walkthroughs, demos, feedback, and async updates. A good Loom-style option when you want simple recording and sharing.</p>
+        <span class="url">cap.so</span>
       </a>
     </div>
   </main>
